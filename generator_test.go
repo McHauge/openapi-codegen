@@ -10,7 +10,7 @@ func Test_generateComponents(t *testing.T) {
 		t.Errorf("parseOpenAPISpec() error = %v", err)
 		return
 	}
-	_, err = generateComponents(spec, "testdata")
+	_, err = generateComponents(spec, "testdata", false)
 	if err != nil {
 		t.Errorf("generateComponents() error = %v", err)
 		return
@@ -23,7 +23,7 @@ func Test_generateClient(t *testing.T) {
 		t.Errorf("parseOpenAPISpec() error = %v", err)
 		return
 	}
-	_, err = generateClient(spec, "testdata")
+	_, err = generateClient(spec, "testdata", false)
 	if err != nil {
 		t.Errorf("generateClient() error = %v", err)
 		return

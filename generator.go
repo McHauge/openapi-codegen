@@ -170,7 +170,7 @@ func extractTypeNameFromRef(ref string) string {
 }
 
 // Generate Go code for all components
-func generateComponents(spec *openapi3.T, packageName string) (string, error) {
+func generateComponents(spec *openapi3.T, packageName string, skipFormat bool) (string, error) {
 	fileData := FileData{
 		PackageName: packageName,
 		Schemas:     make([]*Schema, 0),
@@ -217,10 +217,10 @@ func generateComponents(spec *openapi3.T, packageName string) (string, error) {
 		return s.Name
 	})
 
-	return applySchemaTemplate(fileData)
+	return applySchemaTemplate(fileData, skipFormat)
 }
 
-func generateClient(spec *openapi3.T, packageName string) (string, error) {
+func generateClient(spec *openapi3.T, packageName string, skipFormat bool) (string, error) {
     fileData := FileData{
 		PackageName: packageName,
 		Requests:    make([]*Request, 0),
@@ -240,5 +240,5 @@ func generateClient(spec *openapi3.T, packageName string) (string, error) {
         fileData.Requests = append(fileData.Requests, requests...)
     }
 
-    return applyClientTemplate(fileData)
+    return applyClientTemplate(fileData, skipFormat)
 }

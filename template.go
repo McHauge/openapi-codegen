@@ -30,35 +30,41 @@ var (
 )
 
 // applySchemaTemplate Apply Go templates to generate code
-func applySchemaTemplate(data any) (string, error) {
+func applySchemaTemplate(data any, skippFormat bool) (string, error) {
 	var buf bytes.Buffer
 	err := schemaTpl.ExecuteTemplate(&buf, "file", data)
 	if err != nil {
 		return "", err
 	}
 
-	// Format the generated code using go/format
-	formattedCode, err := format.Source(buf.Bytes())
-	if err != nil {
-		return "", fmt.Errorf("error formatting generated code: %w", err)
-	}
+	if !skippFormat {
+		// Format the generated code using go/format
+		formattedCode, err := format.Source(buf.Bytes())
+		if err != nil {
+			return "", fmt.Errorf("error formatting generated code: %w", err)
+		}
 
-	return string(formattedCode), nil
+		return string(formattedCode), nil
+	}
+	return buf.String(), nil
 }
 
 // applyClientTemplate Apply Go templates to generate code
-func applyClientTemplate(data any) (string, error) {
+func applyClientTemplate(data any, skippFormat bool) (string, error) {
 	var buf bytes.Buffer
 	err := clientTpl.Execute(&buf, data)
 	if err != nil {
 		return "", err
 	}
 
-	// Format the generated code using go/format
-	formattedCode, err := format.Source(buf.Bytes())
-	if err != nil {
-		return "", fmt.Errorf("error formatting generated code: %w", err)
-	}
+	if !skippFormat {
+		// Format the generated code using go/format
+		formattedCode, err := format.Source(buf.Bytes())
+		if err != nil {
+			return "", fmt.Errorf("error formatting generated code: %w", err)
+		}
 
-	return string(formattedCode), nil
+		return string(formattedCode), nil
+	}
+	return buf.String(), nil
 }

@@ -15,6 +15,7 @@ var (
 	outputPath    = flag.StringP("output", "o", ".", "Output path for generated Go file")
 	packageName   = flag.StringP("package", "p", "api", "Go package name")
 	clientTplFile = flag.StringP("client-tpl", "t", "", "Path to client template file, e.g. client.tmpl")
+	skipFormat    = flag.BoolP("skip-format", "sf", false, "Allows you to skip formating of the output file")
 )
 
 func init() {
@@ -30,7 +31,7 @@ func main() {
 	}
 
 	// Generate Go code from the spec
-	err = generate(spec, *packageName, *outputPath)
+	err = generate(spec, *packageName, *outputPath, *skipFormat)
 	if err != nil {
 		fmt.Printf("Error generating code: %v\n", err)
 	} else {
@@ -39,8 +40,8 @@ func main() {
 }
 
 // Generate Go code from the OpenAPI spec
-func generate(spec *openapi3.T, packageName, outputFilePath string) error {
-	code, err := generateComponents(spec, packageName)
+func generate(spec *openapi3.T, packageName, outputFilePath string, skipFormat bool) error {
+	code, err := generateComponents(spec, packageName, skipFormat)
 	if err != nil {
 		return fmt.Errorf("error generating components: %w", err)
 	}
@@ -63,7 +64,7 @@ func generate(spec *openapi3.T, packageName, outputFilePath string) error {
 		fmt.Println("Using default client template: ", "https://github.com/mchauge/openapi-codegen/blob/main/templates/client.tmpl")
 	}
 
-	code, err = generateClient(spec, packageName)
+	code, err = generateClient(spec, packageName, skipFormat)
 	if err != nil {
 		return fmt.Errorf("error generating client: %w", err)
 	}
