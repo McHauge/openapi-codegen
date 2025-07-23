@@ -27,3 +27,5 @@ go.work.sum
 *.gen.go
 testdata/go.mod
 testdata/go.sum
+
+/test_test_output
