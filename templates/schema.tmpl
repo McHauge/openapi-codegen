@@ -22,7 +22,7 @@ type {{ .Name }} {{ if eq .Type "struct" }}struct {
 
 const (
     {{- range .EnumValues }}
-    {{ $.Name }}{{ . | pascalCase }} {{ $.Name }} = "{{ . }}"
+    {{if eq . "*"}}{{ $.Name }}All {{ $.Name }} = "{{ . }}"{{else}}{{ $.Name }}{{ . | pascalCase }} {{ $.Name }} = "{{ . }}"{{end}}
     {{- end -}}
 ){{- else -}}{{ .Type }}{{- end -}}
 {{ end }}

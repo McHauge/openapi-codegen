@@ -34,7 +34,7 @@ type {{ .Name }}Params struct {
 	{{- end }}
 }
 {{- end }}
-func (c *Client) {{ .Name }}({{ if .Parameters }}params {{ .Name }}Params{{ end }}{{ if .Body }}, body {{ .Body.Name }} {{ end }}) ({{ if .Response }}*{{ .Response.Name }}, {{ end }}error) {
+func (c *Client) {{ .Name }}({{ if .Parameters }}params {{ .Name }}Params{{if .Body}}, {{ end }}{{ end }}{{ if .Body }}body {{ .Body.Name }} {{ end }}) ({{ if .Response }}*{{ .Response.Name }}, {{ end }}error) {
 	path := "{{ .Path }}"
 
 	{{- if .Parameters }}

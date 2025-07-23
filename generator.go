@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strings"
 
+	log "github.com/s00500/env_logger"
+
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/samber/lo"
 )
@@ -117,7 +119,7 @@ func generateRequests(pathItem *openapi3.PathItem, path string) ([]*Request, err
 			}
 			if p := findParameterByRef(param.Ref); p != nil {
 				schema, _, _ := generateSchema(p.Value.Schema, p.Value.Name)
-                schema.In = p.Value.In
+				schema.In = p.Value.In
 				schema.JSONName = p.Value.Name
 				pathSchemas = append(pathSchemas, schema)
 			}
@@ -126,30 +128,68 @@ func generateRequests(pathItem *openapi3.PathItem, path string) ([]*Request, err
 
 	// Create requests for each HTTP method
 	for method, operation := range pathItem.Operations() {
+		// if path == "/groups/{groupId}/requests/{userId}" {
+		// 	log.Info("3:", method, log.Indent(operation))
+		// }
+
 		request := &Request{
-			Name: lo.PascalCase(operation.OperationID),
-			Path: path,
-            Method: lo.Capitalize(method),
-            Parameters: make([]*Schema, 0),
+			Name:       lo.PascalCase(operation.OperationID),
+			Path:       path,
+			Method:     lo.Capitalize(method),
+			Parameters: make([]*Schema, 0),
 		}
 
-        // Add path parameters
-        request.Parameters = append(request.Parameters, pathSchemas...)
+		// Add path parameters
+		request.Parameters = append(request.Parameters, pathSchemas...)
 
-        // other parameters
-        if operation.Parameters != nil {
-            for _, param := range operation.Parameters {
-                if param.Ref == "" {
-                    continue
-                }
-                if p := findParameterByRef(param.Ref); p != nil {
-                    schema, _, _ := generateSchema(p.Value.Schema, p.Value.Name)
-                    schema.In = p.Value.In
+		// Find body if we can set it
+		if operation.RequestBody != nil {
+			// if path == "/groups/{groupId}/requests/{userId}" {
+			// 	log.Info("4:", method, log.Indent(operation.RequestBody.Value))
+			// }
+			if operation.RequestBody.Value == nil {
+				continue
+			}
+
+			body_ref := ""
+
+			// If json data:
+			if content := operation.RequestBody.Value.Content.Get("application/json"); content != nil {
+				body_ref = content.Schema.Ref
+			}
+			// If Form data: (needs more work)
+			// if content := operation.RequestBody.Value.Content.Get("multipart/form-data"); content != nil {
+			// 	body_ref = content.Schema.Ref
+			// }
+
+			if body_ref == "" {
+				log.Errorln(path, "Found incompatible Content Type:", log.Indent(operation.RequestBody.Value.Content))
+			} else {
+				schema := &Schema{
+					Name: extractTypeNameFromRef(body_ref),
+				}
+				request.Body = schema
+			}
+		}
+
+		// if path == "/groups/{groupId}/requests/{userId}" {
+		// 	log.Info("5:", method, log.Indent(request.Body))
+		// }
+
+		// other parameters
+		if operation.Parameters != nil {
+			for _, param := range operation.Parameters {
+				if param.Ref == "" {
+					continue
+				}
+				if p := findParameterByRef(param.Ref); p != nil {
+					schema, _, _ := generateSchema(p.Value.Schema, p.Value.Name)
+					schema.In = p.Value.In
 					schema.JSONName = p.Value.Name
-                    request.Parameters = append(request.Parameters, schema)
-                }
-            }
-        }
+					request.Parameters = append(request.Parameters, schema)
+				}
+			}
+		}
 
 		// Add response
 		if response := operation.Responses.Status(200); response != nil && response.Ref != "" {
@@ -159,7 +199,7 @@ func generateRequests(pathItem *openapi3.PathItem, path string) ([]*Request, err
 			request.Response = schema
 		}
 
-        requests = append(requests, request)
+		requests = append(requests, request)
 	}
 
 	return requests, nil
@@ -192,6 +232,14 @@ func generateComponents(spec *openapi3.T, packageName string, skipFormat bool) (
 			}
 			fileData.Schemas = append(fileData.Schemas, schema)
 			fileData.Schemas = append(fileData.Schemas, additionalSchemas...)
+
+			if key == "GroupPermissions" {
+			log.Info(key)
+			log.Warn(schema.EnumValues...)
+			log.Warn(log.Indent(schema.EnumValues))
+		}
+
+
 		}
 	}
 	// Components.Responses
@@ -221,24 +269,32 @@ func generateComponents(spec *openapi3.T, packageName string, skipFormat bool) (
 }
 
 func generateClient(spec *openapi3.T, packageName string, skipFormat bool) (string, error) {
-    fileData := FileData{
+	fileData := FileData{
 		PackageName: packageName,
 		Requests:    make([]*Request, 0),
 	}
 
-    keys := getYAMLNodeKeys("paths")
-    if keys == nil {
-        return "", fmt.Errorf("failed to get paths keys")
-    }
+	keys := getYAMLNodeKeys("paths")
+	if keys == nil {
+		return "", fmt.Errorf("failed to get paths keys")
+	}
 
-    for _, key := range keys {
-        pathItem := spec.Paths.Value(key)
-        requests, err := generateRequests(pathItem, key)
-        if err != nil {
-            return "", fmt.Errorf("failed to generate requests for %s: %w", key, err)
-        }
-        fileData.Requests = append(fileData.Requests, requests...)
-    }
+	for _, key := range keys {
+		// if key == "/groups/{groupId}/requests/{userId}" {
+		// 	pathItem := spec.Paths.Value(key)
+		// 	log.Warnln("1:", log.Indent(pathItem.Put))
 
-    return applyClientTemplate(fileData, skipFormat)
+		// 	x, _ := generateRequests(pathItem, key)
+		// 	log.Warnln("2:", log.Indent(x))
+		// }
+
+		pathItem := spec.Paths.Value(key)
+		requests, err := generateRequests(pathItem, key)
+		if err != nil {
+			return "", fmt.Errorf("failed to generate requests for %s: %w", key, err)
+		}
+		fileData.Requests = append(fileData.Requests, requests...)
+	}
+
+	return applyClientTemplate(fileData, skipFormat)
 }

@@ -29,3 +29,5 @@ testdata/go.mod
 testdata/go.sum
 
 /test_test_output
+/node_modules
+*.lock

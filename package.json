@@ -1,0 +1,11 @@
+{
+  "name": "openapi-codegen",
+  "version": "0.0.1",
+  "scripts": {
+    "test": "cross-env CLICOLOR_FORCE=1 LOG=ln go test .",
+    "gen": "cross-env CLICOLOR_FORCE=1 LOG=ln go run . -i=./testdata/openapi.yaml -f=false -o=./test_output/"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
+  }
+}
