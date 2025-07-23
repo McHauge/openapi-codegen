@@ -60,7 +60,7 @@ func generate(spec *openapi3.T, packageName, outputFilePath string) error {
 		clientTplContent = string(f)
 		clientTpl = template.Must(template.New("client").Funcs(funcMap).Parse(clientTplContent))
 	} else {
-		fmt.Println("Using default client template: ", "https://github.com/mayocream/openapi-codegen/blob/main/templates/client.tmpl")
+		fmt.Println("Using default client template: ", "https://github.com/mchauge/openapi-codegen/blob/main/templates/client.tmpl")
 	}
 
 	code, err = generateClient(spec, packageName)

@@ -1,4 +1,4 @@
-module github.com/mayocream/openapi-codegen
+module github.com/mchauge/openapi-codegen
 
 go 1.23.1
 

@@ -12,7 +12,7 @@ Supports [OpenAPI 3.0.3](https://spec.openapis.org/oas/v3.0.3.html).
 ## Usage
 
 ```bash
-go install github.com/mayocream/openapi-codegen@latest
+go install github.com/mchauge/openapi-codegen@latest
 
 Usage of openapi-codegen:
   -t, --client-tpl string   Path to client template file, e.g. client.tmpl
