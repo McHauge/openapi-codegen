@@ -30,14 +30,14 @@ var (
 )
 
 // applySchemaTemplate Apply Go templates to generate code
-func applySchemaTemplate(data any, skippFormat bool) (string, error) {
+func applySchemaTemplate(data any, skipFormat bool) (string, error) {
 	var buf bytes.Buffer
 	err := schemaTpl.ExecuteTemplate(&buf, "file", data)
 	if err != nil {
 		return "", err
 	}
 
-	if !skippFormat {
+	if !skipFormat {
 		// Format the generated code using go/format
 		formattedCode, err := format.Source(buf.Bytes())
 		if err != nil {
@@ -50,14 +50,14 @@ func applySchemaTemplate(data any, skippFormat bool) (string, error) {
 }
 
 // applyClientTemplate Apply Go templates to generate code
-func applyClientTemplate(data any, skippFormat bool) (string, error) {
+func applyClientTemplate(data any, skipFormat bool) (string, error) {
 	var buf bytes.Buffer
 	err := clientTpl.Execute(&buf, data)
 	if err != nil {
 		return "", err
 	}
 
-	if !skippFormat {
+	if !skipFormat {
 		// Format the generated code using go/format
 		formattedCode, err := format.Source(buf.Bytes())
 		if err != nil {
